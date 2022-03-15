@@ -11,3 +11,8 @@ build-local:
 # Run all unit tests for in-tree functions
 unit-test:
 	./scripts/unit-test.sh
+
+# Releases the function name provided (must include publisher name)
+# Example: `make release sig-cli/render-helm-chart`
+release:
+	./scripts/release.sh $(FUNCTION_NAME)
