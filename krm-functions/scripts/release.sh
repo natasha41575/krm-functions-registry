@@ -26,6 +26,8 @@
 # if no second argument is provided). This will push a tag $FUNCTION_NAME/$VERSION
 # to the Github repo and will push to the release branch, e.g. $FUNCTION_NAME/v0.2.
 #
+# $FUNCTION_NAME should be of the form $PUBLISHER/$FUNCTION
+#
 # After computing the correct version number to release, the script will ask the
 # user to confirm the release version and the function name before triggering
 # the release.
@@ -110,7 +112,7 @@ fi
 
 # Get confirmation from user.
 nl=$'\n'
-read -p "Preparing to release $FUNCTION_NAME/$VERSION. Continue? [Y] or [N]${nl}" -n 1 -r
+read -p "Prepared to release $FUNCTION_NAME/$VERSION. Continue? [Y] or [N]${nl}" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   echo "Triggering release..."
@@ -157,7 +159,7 @@ git rebase $REMOTE/main
 
 # push branch to remote
 echo "pushing release branch to remote..."
-git push $REMOTE $RELEASE_BRANCH
+git push -f $REMOTE $RELEASE_BRANCH
 
 # create local release tag
 echo "creating local tag..."
@@ -172,7 +174,8 @@ echo "checking out main..."
 git checkout main
 
 # delete release branch from local
-echo "deleting local release branch..."
+echo "deleting local release branch and tag..."
+git tag --delete $FUNCTION_NAME/$VERSION
 git branch -D $RELEASE_BRANCH
 
 echo "release.sh: success."

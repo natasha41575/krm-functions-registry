@@ -1,0 +1,48 @@
+steps:
+  - name: "bash"
+    args:
+      - "echo"
+      - "Cloud build substitution check: "
+      - "PROJECT_ID=$PROJECT_ID"
+      - "TAG_NAME=$TAG_NAME"
+  - name: ubuntu
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        echo $TAG_NAME | sed 's:.*v::' | tr -d '"' > /workspace/image_tag.txt
+        dirname $TAG_NAME > /workspace/function_name.txt
+        echo krm-functions/$(cat /workspace/function_name.txt)/Dockerfile > /workspace/dockerfile.txt
+        echo "function name: $(cat /workspace/function_name.txt)"
+        echo "image tag: $(cat /workspace/image_tag.txt)"
+        echo "dockerfile: $(cat /workspace/dockerfile.txt)"
+  - name: "gcr.io/cloud-builders/docker"
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - >
+        docker
+        build
+        -t
+        "gcr.io/$PROJECT_ID/$(cat /workspace/function_name.txt):v$(cat /workspace/image_tag.txt)"
+        -t
+        "gcr.io/$PROJECT_ID/$(cat /workspace/function_name.txt):latest"
+        -f
+        "$(cat /workspace/dockerfile.txt)"
+        krm-functions/$(cat /workspace/function_name.txt)
+  - name: "gcr.io/cloud-builders/docker"
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - >
+        docker
+        push
+        "gcr.io/$PROJECT_ID/$(cat /workspace/function_name.txt):v$(cat /workspace/image_tag.txt)"
+  - name: "gcr.io/cloud-builders/docker"
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - >
+        docker
+        push
+        "gcr.io/$PROJECT_ID/$(cat /workspace/function_name.txt):latest"
